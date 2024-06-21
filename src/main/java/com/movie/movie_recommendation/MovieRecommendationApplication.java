@@ -3,6 +3,9 @@ package com.movie.movie_recommendation;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
+/**
+ * HI 
+ */
 @SpringBootApplication
 public class MovieRecommendationApplication {
 
