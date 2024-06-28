@@ -1,6 +1,8 @@
 package com.movie.backend.service;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -45,7 +47,7 @@ public class RatingService {
         return ratingRepository.save(rating);
     }
     
-    public Rating updateRating(Long userId, Long movieId, double rating) {
+    public Rating updateRating(int userId, int movieId, double rating) {
     	Rating existingRating = ratingRepository.findByUserIdAndMovieId(userId, movieId);
 
       
@@ -57,7 +59,7 @@ public class RatingService {
     
     }
     
-    public void deleteRating(Long ratingId) {
+    public void deleteRating(int ratingId) {
         // Retrieve the existing rating by its ID
         Rating existingRating = ratingRepository.findById(ratingId)
                 .orElseThrow(() -> new IllegalArgumentException("Rating not found with id: " + ratingId));
@@ -87,5 +89,21 @@ public class RatingService {
         return movies;
         
         
+    }
+    
+    public List<String> getRecommendationsByUserId(Integer inputUserId){
+    	HashMap<String, Integer> x = ratingRepository.findRatingsByUserId(inputUserId);
+    	
+    	if (x.size() == 0) {
+    		return null;
+    	}
+    	
+    	
+    	List<String> recommendation = new ArrayList<String>();
+    	for (Map.Entry<String, Integer> entry : x.entrySet()) {
+    		String movie = entry.getKey();
+    		
+    		
+    	}
     }
 }

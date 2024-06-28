@@ -3,18 +3,15 @@ package com.movie.backend.entity;
 import javax.persistence.*;
 
 @Entity
-@Table(name = "Accounts")
+@Table(name = "accounts", schema = "public")
 public class Account {
 	
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long id; // Assuming your primary key is of type Long
-	
-	
 	@Column(name = "user_id")
-	private int user_id;
+	private Integer user_id; // Assuming your primary key is of type Long
 	
-	
+		
 	@Column(name = "user")
 	private String user;
 	
@@ -28,6 +25,10 @@ public class Account {
 		this.user_id = user_id;
 		this.user = user;
 		this.pass = pass;
+	}
+	
+	public Account() {
+		
 	}
 
 

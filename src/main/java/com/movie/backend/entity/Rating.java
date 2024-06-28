@@ -8,11 +8,8 @@ public class Rating {
 	
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long id; // Assuming your primary key is of type Long
-	
-	
 	@Column(name = "user_id")
-	private int user_id;
+	private int user_id; // Assuming your primary key is of type Long
 	
 	
 	@Column(name = "movie_id")

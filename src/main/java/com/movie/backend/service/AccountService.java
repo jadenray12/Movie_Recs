@@ -11,6 +11,9 @@ import java.util.Optional;
 public class AccountService {
 
     private final AccountRepository accountRepository;
+    
+    private String username;
+    
 
     @Autowired
     public AccountService(AccountRepository accountRepository) {

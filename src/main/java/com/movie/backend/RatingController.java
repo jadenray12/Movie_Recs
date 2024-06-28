@@ -28,14 +28,14 @@ public class RatingController {
 
     // Example endpoint to update an existing rating
     @PutMapping("/update")
-    public Rating updateRating(@RequestParam Long userId, @RequestParam Long movieId, @RequestParam int rating) {
+    public Rating updateRating(@RequestParam int userId, @RequestParam int movieId, @RequestParam int rating) {
     	
     	return ratingService.updateRating(userId, movieId, rating);
     }
 
     // Example endpoint to delete a rating by ID
     @DeleteMapping("/delete/{id}")
-    public void deleteRating(@PathVariable Long id) {
+    public void deleteRating(@PathVariable int id) {
         ratingService.deleteRating(id);
     }
 }
