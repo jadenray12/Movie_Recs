@@ -3,6 +3,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -92,7 +93,7 @@ public class RatingService {
     }
     
     public List<String> getRecommendationsByUserId(Integer inputUserId){
-    	HashMap<String, Integer> x = ratingRepository.findRatingsByUserId(inputUserId);
+    	HashMap<Integer, Integer> x = ratingRepository.findRatingsByUserId(inputUserId);
     	
     	if (x.size() == 0) {
     		return null;
@@ -100,8 +101,8 @@ public class RatingService {
     	
     	
     	List<String> recommendation = new ArrayList<String>();
-    	for (Map.Entry<String, Integer> entry : x.entrySet()) {
-    		String movie = entry.getKey();
+    	for (Entry<Integer, Integer> entry : x.entrySet()) {
+    		Integer movie = entry.getKey();
     		
     		
     	}
