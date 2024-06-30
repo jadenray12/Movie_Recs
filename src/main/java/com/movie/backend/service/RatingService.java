@@ -60,12 +60,10 @@ public class RatingService {
     
     }
     
-    public void deleteRating(int ratingId) {
-        // Retrieve the existing rating by its ID
-        Rating existingRating = ratingRepository.findById(ratingId)
-                .orElseThrow(() -> new IllegalArgumentException("Rating not found with id: " + ratingId));
-
-        // Delete the rating
+    public void deleteRating(int userId, int movieId) {
+        
+    	Rating existingRating = ratingRepository.findByUserIdAndMovieId(userId, movieId);
+    	
         ratingRepository.delete(existingRating);
     }
     

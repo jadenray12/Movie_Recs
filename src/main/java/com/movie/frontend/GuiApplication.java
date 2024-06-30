@@ -1,6 +1,7 @@
 package com.movie.frontend;
 
 import com.movie.backend.entity.Account;
+import com.movie.backend.entity.Movie;
 import com.movie.backend.service.AccountService;
 import com.movie.backend.service.MovieService;
 import com.movie.backend.service.RatingService;
@@ -18,6 +19,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 @SpringBootApplication
@@ -219,7 +222,7 @@ public class GuiApplication {
                         String title = (String) model.getValueAt(modelRow, 0);
                         int confirm = JOptionPane.showConfirmDialog(null, "Are you sure you want to delete the rating for " + title + "?", "Confirm Delete", JOptionPane.YES_NO_OPTION);
                         if (confirm == JOptionPane.YES_OPTION) {
-                            ratingService.deleteRating(user.getUser_id(), title);
+                            ratingService.deleteRating(user.getUser_id(), movieService.getMovieIdByMovie(title));
                             model.removeRow(modelRow);
                         }
                     } else {
@@ -250,9 +253,10 @@ public class GuiApplication {
             JScrollPane scrollPane = new JScrollPane(panel);
             frame.add(scrollPane);
 
-            List<String> recommendations = accountService.getRecommendations(user.getUser_id());
-            for (String recommendation : recommendations) {
-                JLabel recommendationLabel = new JLabel(recommendation);
+            List<Movie> recommendations = new ArrayList<Movie>();
+            recommendations = ratingService.recommendMoviesFromNeighborhood(user.getUser_id());
+            for (Movie recommendation : recommendations) {
+                JLabel recommendationLabel = new JLabel(recommendation.getTitle());
                 panel.add(recommendationLabel);
             }
 

@@ -21,4 +21,6 @@ public interface RatingRepository extends JpaRepository<Rating, Integer> {
 	
 	@Query("SELECT m.title, r.rating FROM Rating r JOIN Movie m ON r.movie_id = m.id WHERE r.user_id = :userId")
 	List<Object[]> findRatingsByUserId(@Param("userId") int userId);
+	
+
 }
