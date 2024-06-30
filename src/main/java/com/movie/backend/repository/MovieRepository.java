@@ -10,4 +10,7 @@ public interface MovieRepository extends JpaRepository<Movie, Integer> {
 
 	@Query("SELECT m FROM Movie m WHERE m.id = :movieId")
     Movie getMovieById(Integer movieId);
+
+	@Query("SELECT m.id FROM Movie m WHERE m.title = :movieId")
+	int getMovieIdByMovie(String movie);
 }

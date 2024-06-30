@@ -11,10 +11,13 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.ComponentScan;
 
 import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableRowSorter;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.List;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.Map;
 
 @SpringBootApplication
@@ -134,26 +137,52 @@ public class GuiApplication {
             JPanel panel = new JPanel(new BorderLayout());
             frame.add(panel);
 
-            JPanel ratingsPanel = new JPanel();
-            ratingsPanel.setLayout(new BoxLayout(ratingsPanel, BoxLayout.Y_AXIS));
-            JScrollPane scrollPane = new JScrollPane(ratingsPanel);
+            // Create search bar
+            JPanel searchPanel = new JPanel(new BorderLayout());
+            JTextField searchBar = new JTextField();
+            searchBar.setFont(new Font("Arial", Font.PLAIN, 16));
+            searchPanel.add(searchBar, BorderLayout.CENTER);
+            panel.add(searchPanel, BorderLayout.NORTH);
+
+            // Create table model
+            DefaultTableModel model = new DefaultTableModel(new String[]{"Title", "Rating"}, 0);
+            JTable table = new JTable(model);
+            table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+            JScrollPane scrollPane = new JScrollPane(table);
             panel.add(scrollPane, BorderLayout.CENTER);
 
+            // Create table row sorter
+            TableRowSorter<DefaultTableModel> sorter = new TableRowSorter<>(model);
+            table.setRowSorter(sorter);
+
+            // Fetch ratings
             Map<String, Double> ratings = ratingService.getRatingsByUserId(user.getUser_id());
             for (Map.Entry<String, Double> rating : ratings.entrySet()) {
-                JPanel ratingPanel = new JPanel(new GridLayout(1, 2));
-                JLabel titleLabel = new JLabel(rating.getKey().toString());
-                JLabel ratingLabel = new JLabel(rating.getValue().toString());
-                ratingPanel.add(titleLabel);
-                ratingPanel.add(ratingLabel);
-                ratingsPanel.add(ratingPanel);
-
-                ratingPanel.addMouseListener(new java.awt.event.MouseAdapter() {
-                    public void mouseClicked(java.awt.event.MouseEvent evt) {
-                        selectedRatingId =  rating.getValue();
-                    }
-                });
+                model.addRow(new Object[]{rating.getKey(), rating.getValue()});
             }
+
+            // Add search functionality
+            searchBar.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
+                public void insertUpdate(javax.swing.event.DocumentEvent e) {
+                    search(searchBar.getText());
+                }
+
+                public void removeUpdate(javax.swing.event.DocumentEvent e) {
+                    search(searchBar.getText());
+                }
+
+                public void changedUpdate(javax.swing.event.DocumentEvent e) {
+                    search(searchBar.getText());
+                }
+
+                public void search(String str) {
+                    if (str.length() == 0) {
+                        sorter.setRowFilter(null);
+                    } else {
+                        sorter.setRowFilter(RowFilter.regexFilter("(?i)" + str));
+                    }
+                }
+            });
 
             JPanel buttonPanel = new JPanel();
             JButton editButton = new JButton("Edit");
@@ -167,12 +196,14 @@ public class GuiApplication {
 
             editButton.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
-                    if (selectedRatingId != null) {
-                        String newRating = JOptionPane.showInputDialog("Enter new rating:");
+                    int selectedRow = table.getSelectedRow();
+                    if (selectedRow != -1) {
+                        int modelRow = table.convertRowIndexToModel(selectedRow);
+                        String title = (String) model.getValueAt(modelRow, 0);
+                        String newRating = JOptionPane.showInputDialog("Enter new rating for " + title + ":");
                         if (newRating != null) {
-                            ratingService.editRating(selectedRatingId, Integer.parseInt(newRating));
-                            frame.dispose();
-                            MainPage.createAndShowGUI();
+                            ratingService.updateRating(user.getUser_id(), movieService.getMovieIdByMovie(title), Double.parseDouble(newRating));
+                            model.setValueAt(Double.parseDouble(newRating), modelRow, 1);
                         }
                     } else {
                         JOptionPane.showMessageDialog(null, "Please select a rating to edit.");
@@ -182,12 +213,14 @@ public class GuiApplication {
 
             deleteButton.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
-                    if (selectedRatingId != null) {
-                        int confirm = JOptionPane.showConfirmDialog(null, "Are you sure you want to delete this rating?", "Confirm Delete", JOptionPane.YES_NO_OPTION);
+                    int selectedRow = table.getSelectedRow();
+                    if (selectedRow != -1) {
+                        int modelRow = table.convertRowIndexToModel(selectedRow);
+                        String title = (String) model.getValueAt(modelRow, 0);
+                        int confirm = JOptionPane.showConfirmDialog(null, "Are you sure you want to delete the rating for " + title + "?", "Confirm Delete", JOptionPane.YES_NO_OPTION);
                         if (confirm == JOptionPane.YES_OPTION) {
-                            ratingService.deleteRating(selectedRatingId);
-                            frame.dispose();
-                            MainPage.createAndShowGUI();
+                            ratingService.deleteRating(user.getUser_id(), title);
+                            model.removeRow(modelRow);
                         }
                     } else {
                         JOptionPane.showMessageDialog(null, "Please select a rating to delete.");
@@ -227,6 +260,4 @@ public class GuiApplication {
             frame.setVisible(true);
         }
     }
-
-    private static Double selectedRatingId = null;
 }

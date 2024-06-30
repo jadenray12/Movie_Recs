@@ -27,6 +27,10 @@ public class MovieService {
         return movieRepository.getMovieById(id);
     }
     
+    public int getMovieIdByMovie(String movie) {
+    	return movieRepository.getMovieIdByMovie(movie);
+    }
+    
 //    public List<Movie> findLatestMovie() {
 //        return movieRepository.findFirstByOrderByMovie_IdDesc();
 //    }
