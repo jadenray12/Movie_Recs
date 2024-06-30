@@ -92,19 +92,23 @@ public class RatingService {
         
     }
     
-    public List<String> getRecommendationsByUserId(Integer inputUserId){
-    	HashMap<Integer, Integer> x = ratingRepository.findRatingsByUserId(inputUserId);
+    public Map<String, Double> getRatingsByUserId(Integer inputUserId){
+    	List<Object[]> x = ratingRepository.findRatingsByUserId(inputUserId);
     	
     	if (x.size() == 0) {
     		return null;
     	}
     	
     	
-    	List<String> recommendation = new ArrayList<String>();
-    	for (Entry<Integer, Integer> entry : x.entrySet()) {
-    		Integer movie = entry.getKey();
-    		
-    		
-    	}
+    	Map<String, Double> ratings = new HashMap<>();
+    	
+    	for (Object[] result : x) {
+            String title = (String) result[0];
+            Double rating = (Double) result[1];
+            ratings.put(title, rating);
+        }
+    	
+    	
+    	return ratings;
     }
 }

@@ -20,8 +20,11 @@ public class AccountService {
         this.accountRepository = accountRepository;
     }
 
-    public boolean login(String username, String password) {
+    public Account login(String username, String password) {
         Optional<Account> accountOptional = accountRepository.findByUsernameAndPassword(username, password);
-        return accountOptional.isPresent();
+        if (!accountOptional.isPresent()) {
+        	return null;
+        }
+        return accountOptional.get();
     }
 }
