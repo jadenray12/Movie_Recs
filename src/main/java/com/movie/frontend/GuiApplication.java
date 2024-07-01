@@ -12,6 +12,8 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.ComponentScan;
 
 import javax.swing.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableRowSorter;
 import java.awt.*;
@@ -132,12 +134,12 @@ public class GuiApplication {
         static void createAndShowGUI() {
             JFrame frame = new JFrame("Main Page");
             frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-            frame.setSize(1200, 400);
+            frame.setSize(1600, 800); // Adjust the size to make the frame larger
 
             JPanel panel = new JPanel(new BorderLayout());
             frame.add(panel);
 
-            // Create search bar
+            // Create search bar for global search
             JPanel searchPanel = new JPanel(new BorderLayout());
             JTextField searchBar = new JTextField();
             searchBar.setFont(new Font("Arial", Font.PLAIN, 16));
@@ -145,8 +147,12 @@ public class GuiApplication {
             panel.add(searchPanel, BorderLayout.NORTH);
 
             // Create split pane for ratings and recommendations
-            JSplitPane splitPane = new JSplitPane();
-            panel.add(splitPane, BorderLayout.CENTER);
+            JSplitPane mainSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
+            mainSplitPane.setDividerLocation(800); // Adjust the divider location for the larger frame
+            panel.add(mainSplitPane, BorderLayout.CENTER);
+
+            // Create panel for ratings and all movies tables with vertical split
+            JPanel leftPanel = new JPanel(new BorderLayout());
 
             // Create panel for ratings table with heading
             JPanel ratingsPanel = new JPanel(new BorderLayout());
@@ -158,43 +164,46 @@ public class GuiApplication {
             DefaultTableModel ratingsModel = new DefaultTableModel(new String[]{"Title", "Rating"}, 0);
             JTable ratingsTable = new JTable(ratingsModel);
             ratingsTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+            TableRowSorter<DefaultTableModel> ratingsSorter = new TableRowSorter<>(ratingsModel);
+            ratingsTable.setRowSorter(ratingsSorter);
             JScrollPane ratingsScrollPane = new JScrollPane(ratingsTable);
             ratingsPanel.add(ratingsScrollPane, BorderLayout.CENTER);
 
-            splitPane.setLeftComponent(ratingsPanel);
+            // Create vertical split pane for ratings and all movies tables
+            JSplitPane verticalSplitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
+            verticalSplitPane.setTopComponent(ratingsPanel);
 
-            // Create table row sorter for ratings
-            TableRowSorter<DefaultTableModel> ratingsSorter = new TableRowSorter<>(ratingsModel);
-            ratingsTable.setRowSorter(ratingsSorter);
+            // Create panel for all movies table with heading and search bar
+            JPanel allMoviesPanel = new JPanel(new BorderLayout());
 
-            // Fetch ratings
-            Map<String, Double> ratings = ratingService.getRatingsByUserId(user.getUser_id());
-            for (Map.Entry<String, Double> rating : ratings.entrySet()) {
-                ratingsModel.addRow(new Object[]{rating.getKey(), rating.getValue()});
-            }
+            // Create panel for all movies table with heading
+            JPanel allMoviesHeadingPanel = new JPanel(new BorderLayout());
+            JLabel allMoviesHeadingLabel = new JLabel("All Movies", SwingConstants.CENTER);
+            allMoviesHeadingLabel.setFont(new Font("Arial", Font.BOLD, 16));
+            allMoviesHeadingPanel.add(allMoviesHeadingLabel, BorderLayout.CENTER);
+            allMoviesPanel.add(allMoviesHeadingPanel, BorderLayout.NORTH);
 
-            // Add search functionality
-            searchBar.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
-                public void insertUpdate(javax.swing.event.DocumentEvent e) {
-                    search(searchBar.getText());
-                }
+            // Create search bar for all movies
+            JPanel allMoviesSearchPanel = new JPanel(new BorderLayout());
+            JTextField allMoviesSearchBar = new JTextField();
+            allMoviesSearchBar.setFont(new Font("Arial", Font.PLAIN, 16));
+            allMoviesSearchPanel.add(allMoviesSearchBar, BorderLayout.CENTER);
+            allMoviesPanel.add(allMoviesSearchPanel, BorderLayout.NORTH);
 
-                public void removeUpdate(javax.swing.event.DocumentEvent e) {
-                    search(searchBar.getText());
-                }
+            // Create all movies table
+            DefaultTableModel allMoviesModel = new DefaultTableModel(new String[]{"Title"}, 0);
+            JTable allMoviesTable = new JTable(allMoviesModel);
+            allMoviesTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+            TableRowSorter<DefaultTableModel> allMoviesSorter = new TableRowSorter<>(allMoviesModel);
+            allMoviesTable.setRowSorter(allMoviesSorter);
+            JScrollPane allMoviesScrollPane = new JScrollPane(allMoviesTable);
+            allMoviesPanel.add(allMoviesScrollPane, BorderLayout.CENTER);
 
-                public void changedUpdate(javax.swing.event.DocumentEvent e) {
-                    search(searchBar.getText());
-                }
+            verticalSplitPane.setBottomComponent(allMoviesPanel);
+            verticalSplitPane.setDividerLocation(400); // Adjust height as needed
 
-                public void search(String str) {
-                    if (str.length() == 0) {
-                        ratingsSorter.setRowFilter(null);
-                    } else {
-                        ratingsSorter.setRowFilter(RowFilter.regexFilter("(?i)" + str));
-                    }
-                }
-            });
+            leftPanel.add(verticalSplitPane, BorderLayout.CENTER);
+            mainSplitPane.setLeftComponent(leftPanel);
 
             // Create panel for recommendations table with heading
             JPanel recommendationsPanel = new JPanel(new BorderLayout());
@@ -209,15 +218,73 @@ public class GuiApplication {
             JScrollPane recommendationsScrollPane = new JScrollPane(recommendationsTable);
             recommendationsPanel.add(recommendationsScrollPane, BorderLayout.CENTER);
 
-            splitPane.setRightComponent(recommendationsPanel);
+            mainSplitPane.setRightComponent(recommendationsPanel);
 
-            // Fetch recommendations
+            // Fetch ratings and populate the ratings table
+            Map<String, Double> ratings = ratingService.getRatingsByUserId(user.getUser_id());
+            for (Map.Entry<String, Double> rating : ratings.entrySet()) {
+                ratingsModel.addRow(new Object[]{rating.getKey(), rating.getValue()});
+            }
+
+            // Fetch recommendations and populate the recommendations table
             Map<String, Double> recommendations = ratingService.recommendMoviesFromNeighborhood(user.getUser_id());
             for (Map.Entry<String, Double> recommendation : recommendations.entrySet()) {
                 recommendationsModel.addRow(new Object[]{recommendation.getKey(), recommendation.getValue()});
             }
-            
 
+            // Fetch all movies and populate the all movies table
+            List<Movie> allMovies = movieService.getAllMovies();
+            for (Movie movie : allMovies) {
+                allMoviesModel.addRow(new Object[]{movie.getTitle()});
+            }
+
+            // Add search functionality for the global search bar
+            searchBar.getDocument().addDocumentListener(new DocumentListener() {
+                public void insertUpdate(DocumentEvent e) {
+                    search(searchBar.getText());
+                }
+
+                public void removeUpdate(DocumentEvent e) {
+                    search(searchBar.getText());
+                }
+
+                public void changedUpdate(DocumentEvent e) {
+                    search(searchBar.getText());
+                }
+
+                private void search(String str) {
+                    if (str.length() == 0) {
+                        ratingsSorter.setRowFilter(null);
+                    } else {
+                        ratingsSorter.setRowFilter(RowFilter.regexFilter("(?i)" + str, 0)); // Filter by the "Title" column (index 0)
+                    }
+                }
+            });
+
+            // Add search functionality for the all movies search bar
+            allMoviesSearchBar.getDocument().addDocumentListener(new DocumentListener() {
+                public void insertUpdate(DocumentEvent e) {
+                    searchAllMovies(allMoviesSearchBar.getText());
+                }
+
+                public void removeUpdate(DocumentEvent e) {
+                    searchAllMovies(allMoviesSearchBar.getText());
+                }
+
+                public void changedUpdate(DocumentEvent e) {
+                    searchAllMovies(allMoviesSearchBar.getText());
+                }
+
+                private void searchAllMovies(String str) {
+                    if (str.length() == 0) {
+                        allMoviesSorter.setRowFilter(null);
+                    } else {
+                        allMoviesSorter.setRowFilter(RowFilter.regexFilter("(?i)" + str, 0)); // Filter by the "Title" column (index 0)
+                    }
+                }
+            });
+
+            // Add buttons
             JPanel buttonPanel = new JPanel();
             JButton editButton = new JButton("Edit");
             JButton deleteButton = new JButton("Delete");
@@ -228,6 +295,7 @@ public class GuiApplication {
             buttonPanel.add(getRecommendationsButton);
             panel.add(buttonPanel, BorderLayout.SOUTH);
 
+            // Button actions
             editButton.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     int selectedRow = ratingsTable.getSelectedRow();
@@ -276,4 +344,6 @@ public class GuiApplication {
             frame.setVisible(true);
         }
     }
+
+
 }
