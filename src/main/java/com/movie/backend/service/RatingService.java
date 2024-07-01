@@ -67,24 +67,18 @@ public class RatingService {
         ratingRepository.delete(existingRating);
     }
     
-    public List<Movie> recommendMoviesFromNeighborhood(Integer inputUserId) {
-        List<Integer> x = ratingRepository.recommendMoviesFromNeighborhood(inputUserId);
+    public Map<String,Double> recommendMoviesFromNeighborhood(Integer inputUserId) {
+        List<Object[]> x = ratingRepository.recommendMoviesFromNeighborhood(inputUserId);
         
-        MovieService movieService = new MovieService(movieRepository);
-        List<Movie> movies = new ArrayList<Movie>();
-        for (Integer movieNumber: x) {
-      	
-        	Movie movie = movieService.MovieNumber(movieNumber);
-        	
-        	movies.add(movie);
-        	
-        	
-        	
-        	
-        	
-        	
+        
+        Map<String, Double> movies = new HashMap<>();
+    	
+    	for (Object[] result : x) {
+            String title = (String) result[0];
+            Double rating = (Double) result[1];
+            movies.put(title, rating);
         }
-        
+        	
         return movies;
         
         

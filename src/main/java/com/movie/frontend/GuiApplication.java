@@ -17,9 +17,6 @@ import javax.swing.table.TableRowSorter;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -135,7 +132,7 @@ public class GuiApplication {
         static void createAndShowGUI() {
             JFrame frame = new JFrame("Main Page");
             frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-            frame.setSize(600, 400);
+            frame.setSize(1200, 400);
 
             JPanel panel = new JPanel(new BorderLayout());
             frame.add(panel);
@@ -147,21 +144,33 @@ public class GuiApplication {
             searchPanel.add(searchBar, BorderLayout.CENTER);
             panel.add(searchPanel, BorderLayout.NORTH);
 
-            // Create table model
-            DefaultTableModel model = new DefaultTableModel(new String[]{"Title", "Rating"}, 0);
-            JTable table = new JTable(model);
-            table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-            JScrollPane scrollPane = new JScrollPane(table);
-            panel.add(scrollPane, BorderLayout.CENTER);
+            // Create split pane for ratings and recommendations
+            JSplitPane splitPane = new JSplitPane();
+            panel.add(splitPane, BorderLayout.CENTER);
 
-            // Create table row sorter
-            TableRowSorter<DefaultTableModel> sorter = new TableRowSorter<>(model);
-            table.setRowSorter(sorter);
+            // Create panel for ratings table with heading
+            JPanel ratingsPanel = new JPanel(new BorderLayout());
+            JLabel ratingsLabel = new JLabel("Your Ratings", SwingConstants.CENTER);
+            ratingsLabel.setFont(new Font("Arial", Font.BOLD, 16));
+            ratingsPanel.add(ratingsLabel, BorderLayout.NORTH);
+
+            // Create ratings table
+            DefaultTableModel ratingsModel = new DefaultTableModel(new String[]{"Title", "Rating"}, 0);
+            JTable ratingsTable = new JTable(ratingsModel);
+            ratingsTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+            JScrollPane ratingsScrollPane = new JScrollPane(ratingsTable);
+            ratingsPanel.add(ratingsScrollPane, BorderLayout.CENTER);
+
+            splitPane.setLeftComponent(ratingsPanel);
+
+            // Create table row sorter for ratings
+            TableRowSorter<DefaultTableModel> ratingsSorter = new TableRowSorter<>(ratingsModel);
+            ratingsTable.setRowSorter(ratingsSorter);
 
             // Fetch ratings
             Map<String, Double> ratings = ratingService.getRatingsByUserId(user.getUser_id());
             for (Map.Entry<String, Double> rating : ratings.entrySet()) {
-                model.addRow(new Object[]{rating.getKey(), rating.getValue()});
+                ratingsModel.addRow(new Object[]{rating.getKey(), rating.getValue()});
             }
 
             // Add search functionality
@@ -180,17 +189,39 @@ public class GuiApplication {
 
                 public void search(String str) {
                     if (str.length() == 0) {
-                        sorter.setRowFilter(null);
+                        ratingsSorter.setRowFilter(null);
                     } else {
-                        sorter.setRowFilter(RowFilter.regexFilter("(?i)" + str));
+                        ratingsSorter.setRowFilter(RowFilter.regexFilter("(?i)" + str));
                     }
                 }
             });
 
+            // Create panel for recommendations table with heading
+            JPanel recommendationsPanel = new JPanel(new BorderLayout());
+            JLabel recommendationsLabel = new JLabel("Your Recommendations", SwingConstants.CENTER);
+            recommendationsLabel.setFont(new Font("Arial", Font.BOLD, 16));
+            recommendationsPanel.add(recommendationsLabel, BorderLayout.NORTH);
+
+            // Create recommendations table
+            DefaultTableModel recommendationsModel = new DefaultTableModel(new String[]{"Title", "Expected Title"}, 0);
+            JTable recommendationsTable = new JTable(recommendationsModel);
+            recommendationsTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+            JScrollPane recommendationsScrollPane = new JScrollPane(recommendationsTable);
+            recommendationsPanel.add(recommendationsScrollPane, BorderLayout.CENTER);
+
+            splitPane.setRightComponent(recommendationsPanel);
+
+            // Fetch recommendations
+            Map<String, Double> recommendations = ratingService.recommendMoviesFromNeighborhood(user.getUser_id());
+            for (Map.Entry<String, Double> recommendation : recommendations.entrySet()) {
+                recommendationsModel.addRow(new Object[]{recommendation.getKey(), recommendation.getValue()});
+            }
+            
+
             JPanel buttonPanel = new JPanel();
             JButton editButton = new JButton("Edit");
             JButton deleteButton = new JButton("Delete");
-            JButton getRecommendationsButton = new JButton("Get Recommendations");
+            JButton getRecommendationsButton = new JButton("Refresh Recommendations");
 
             buttonPanel.add(editButton);
             buttonPanel.add(deleteButton);
@@ -199,14 +230,14 @@ public class GuiApplication {
 
             editButton.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
-                    int selectedRow = table.getSelectedRow();
+                    int selectedRow = ratingsTable.getSelectedRow();
                     if (selectedRow != -1) {
-                        int modelRow = table.convertRowIndexToModel(selectedRow);
-                        String title = (String) model.getValueAt(modelRow, 0);
+                        int modelRow = ratingsTable.convertRowIndexToModel(selectedRow);
+                        String title = (String) ratingsModel.getValueAt(modelRow, 0);
                         String newRating = JOptionPane.showInputDialog("Enter new rating for " + title + ":");
                         if (newRating != null) {
                             ratingService.updateRating(user.getUser_id(), movieService.getMovieIdByMovie(title), Double.parseDouble(newRating));
-                            model.setValueAt(Double.parseDouble(newRating), modelRow, 1);
+                            ratingsModel.setValueAt(Double.parseDouble(newRating), modelRow, 1);
                         }
                     } else {
                         JOptionPane.showMessageDialog(null, "Please select a rating to edit.");
@@ -216,14 +247,14 @@ public class GuiApplication {
 
             deleteButton.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
-                    int selectedRow = table.getSelectedRow();
+                    int selectedRow = ratingsTable.getSelectedRow();
                     if (selectedRow != -1) {
-                        int modelRow = table.convertRowIndexToModel(selectedRow);
-                        String title = (String) model.getValueAt(modelRow, 0);
+                        int modelRow = ratingsTable.convertRowIndexToModel(selectedRow);
+                        String title = (String) ratingsModel.getValueAt(modelRow, 0);
                         int confirm = JOptionPane.showConfirmDialog(null, "Are you sure you want to delete the rating for " + title + "?", "Confirm Delete", JOptionPane.YES_NO_OPTION);
                         if (confirm == JOptionPane.YES_OPTION) {
                             ratingService.deleteRating(user.getUser_id(), movieService.getMovieIdByMovie(title));
-                            model.removeRow(modelRow);
+                            ratingsModel.removeRow(modelRow);
                         }
                     } else {
                         JOptionPane.showMessageDialog(null, "Please select a rating to delete.");
@@ -233,32 +264,13 @@ public class GuiApplication {
 
             getRecommendationsButton.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
-                    RecommendationsPage.createAndShowGUI();
+                    recommendationsModel.setRowCount(0);  // Clear the existing recommendations
+                    Map<String, Double> recommendations = ratingService.recommendMoviesFromNeighborhood(user.getUser_id());
+                    for (Map.Entry<String, Double> recommendation : recommendations.entrySet()) {
+                        recommendationsModel.addRow(new Object[]{recommendation.getKey(), recommendation.getValue()});
+                    }
                 }
             });
-
-            frame.setLocationRelativeTo(null);
-            frame.setVisible(true);
-        }
-    }
-
-    static class RecommendationsPage {
-        static void createAndShowGUI() {
-            JFrame frame = new JFrame("Recommendations");
-            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-            frame.setSize(600, 400);
-
-            JPanel panel = new JPanel();
-            panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-            JScrollPane scrollPane = new JScrollPane(panel);
-            frame.add(scrollPane);
-
-            List<Movie> recommendations = new ArrayList<Movie>();
-            recommendations = ratingService.recommendMoviesFromNeighborhood(user.getUser_id());
-            for (Movie recommendation : recommendations) {
-                JLabel recommendationLabel = new JLabel(recommendation.getTitle());
-                panel.add(recommendationLabel);
-            }
 
             frame.setLocationRelativeTo(null);
             frame.setVisible(true);
