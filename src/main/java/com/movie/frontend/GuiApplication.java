@@ -124,7 +124,13 @@ public class GuiApplication {
 
             registerButton.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
-                    // Handle the register action
+                	String username = userText.getText();
+                    String password = new String(passwordText.getPassword());
+                    accountService.createAccount(username, password);
+                    JOptionPane.showMessageDialog(null, "Account Created");
+                    frame.dispose();
+                    LoginPage.createAndShowGUI();
+                    
                 }
             });
         }
@@ -191,7 +197,7 @@ public class GuiApplication {
             allMoviesPanel.add(allMoviesSearchPanel, BorderLayout.NORTH);
 
             // Create all movies table
-            DefaultTableModel allMoviesModel = new DefaultTableModel(new String[]{"Title"}, 0);
+            DefaultTableModel allMoviesModel = new DefaultTableModel(new String[]{"ALL MOVIE TITLES"}, 0);
             JTable allMoviesTable = new JTable(allMoviesModel);
             allMoviesTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
             TableRowSorter<DefaultTableModel> allMoviesSorter = new TableRowSorter<>(allMoviesModel);
@@ -222,9 +228,14 @@ public class GuiApplication {
 
             // Fetch ratings and populate the ratings table
             Map<String, Double> ratings = ratingService.getRatingsByUserId(user.getUser_id());
-            for (Map.Entry<String, Double> rating : ratings.entrySet()) {
-                ratingsModel.addRow(new Object[]{rating.getKey(), rating.getValue()});
+            
+            if (ratings != null ) {
+            	 for (Map.Entry<String, Double> rating : ratings.entrySet()) {
+                     ratingsModel.addRow(new Object[]{rating.getKey(), rating.getValue()});
+                 }
+            	
             }
+           
 
             // Fetch recommendations and populate the recommendations table
             Map<String, Double> recommendations = ratingService.recommendMoviesFromNeighborhood(user.getUser_id());

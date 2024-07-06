@@ -11,8 +11,14 @@ import java.util.Optional;
 
 @Repository
 @ComponentScan("com.movie.entity")
-public interface AccountRepository extends JpaRepository<Account, Long> {
+public interface AccountRepository extends JpaRepository<Account, Integer> {
     
-	@Query("SELECT a FROM Account a WHERE a.user = :username AND a.pass = :password")
+	@Query("SELECT a FROM Account a WHERE a.username = :username AND a.pass = :password")
     Optional<Account> findByUsernameAndPassword(@Param("username") String username, @Param("password") String password);
+	
+	@Query("SELECT MAX(e.user_id) FROM Account e")
+	Integer getMaxId();
+	
+	
+	
 }

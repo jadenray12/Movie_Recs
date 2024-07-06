@@ -3,17 +3,16 @@ package com.movie.backend.entity;
 import javax.persistence.*;
 
 @Entity
-@Table(name = "accounts", schema = "public")
+@Table(name = "accounts")
 public class Account {
 	
 	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "user_id")
 	private Integer user_id; // Assuming your primary key is of type Long
 	
 		
-	@Column(name = "user")
-	private String user;
+	@Column(name = "username")
+	private String username;
 	
 	@Column(name = "pass")
 	private String pass;
@@ -21,9 +20,9 @@ public class Account {
 	
 	
 
-	public Account(int user_id, String user, String pass) {
+	public Account(Integer user_id, String username, String pass) {
 		this.user_id = user_id;
-		this.user = user;
+		this.username = username;
 		this.pass = pass;
 	}
 	
@@ -57,8 +56,8 @@ public class Account {
 	/**
 	 * @return the user
 	 */
-	public String getUser() {
-		return user;
+	public String getUsername() {
+		return username;
 	}
 
 
@@ -67,8 +66,8 @@ public class Account {
 	/**
 	 * @param user the user to set
 	 */
-	public void setUser(String user) {
-		this.user = user;
+	public void setUsername(String username) {
+		this.username = username;
 	}
 
 

@@ -27,4 +27,12 @@ public class AccountService {
         }
         return accountOptional.get();
     }
+    
+    public void createAccount(String username, String password) {
+    	Integer newId = accountRepository.getMaxId() + 1 ;
+    	
+    	Account newAccount = new Account(newId, username, password);
+    	
+    	accountRepository.save(newAccount);
+    }
 }
