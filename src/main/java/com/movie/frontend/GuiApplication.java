@@ -137,20 +137,13 @@ public class GuiApplication {
     }
 
     static class MainPage {
-        static void createAndShowGUI() {
+    	static void createAndShowGUI() {
             JFrame frame = new JFrame("Main Page");
             frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
             frame.setSize(1600, 800); // Adjust the size to make the frame larger
 
             JPanel panel = new JPanel(new BorderLayout());
             frame.add(panel);
-
-            // Create search bar for global search
-            JPanel searchPanel = new JPanel(new BorderLayout());
-            JTextField searchBar = new JTextField();
-            searchBar.setFont(new Font("Arial", Font.PLAIN, 16));
-            searchPanel.add(searchBar, BorderLayout.CENTER);
-            panel.add(searchPanel, BorderLayout.NORTH);
 
             // Create split pane for ratings and recommendations
             JSplitPane mainSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
@@ -159,6 +152,13 @@ public class GuiApplication {
 
             // Create panel for ratings and all movies tables with vertical split
             JPanel leftPanel = new JPanel(new BorderLayout());
+
+            // Create search bar for global search
+            JPanel searchPanel = new JPanel(new BorderLayout());
+            JTextField searchBar = new JTextField("Search Your Ratings");
+            searchBar.setFont(new Font("Arial", Font.PLAIN, 16));
+            searchPanel.add(searchBar, BorderLayout.CENTER);
+            leftPanel.add(searchPanel, BorderLayout.NORTH); // Add search bar to the top of the left panel
 
             // Create panel for ratings table with heading
             JPanel ratingsPanel = new JPanel(new BorderLayout());
@@ -228,14 +228,15 @@ public class GuiApplication {
 
             // Fetch ratings and populate the ratings table
             Map<String, Double> ratings = ratingService.getRatingsByUserId(user.getUser_id());
-            
-            if (ratings != null ) {
-            	 for (Map.Entry<String, Double> rating : ratings.entrySet()) {
-                     ratingsModel.addRow(new Object[]{rating.getKey(), rating.getValue()});
-                 }
-            	
+
+            if (ratings != null) {
+                for (Map.Entry<String, Double> rating : ratings.entrySet()) {
+                    ratingsModel.addRow(new Object[]{rating.getKey(), rating.getValue()});
+                }
+
+            } else {
+                ratingsModel.addRow(new Object[]{"No Ratings", "Search Table in the Bottom Left to Find and Add Movies you have Seen"});
             }
-           
 
             // Fetch recommendations and populate the recommendations table
             Map<String, Double> recommendations = ratingService.recommendMoviesFromNeighborhood(user.getUser_id());
