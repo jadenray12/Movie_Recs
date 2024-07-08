@@ -167,7 +167,20 @@ public class GuiApplication {
             ratingsPanel.add(ratingsLabel, BorderLayout.NORTH);
 
             // Create ratings table
-            DefaultTableModel ratingsModel = new DefaultTableModel(new String[]{"Title", "Rating"}, 0);
+            DefaultTableModel ratingsModel = new DefaultTableModel(new String[]{"Title", "Rating"}, 0) {
+            	/**
+				 * 
+				 */
+				private static final long serialVersionUID = 1L;
+
+				@Override
+                public boolean isCellEditable(int row, int column) {
+                    if (column == 1) {
+                    	return true;
+                    }
+                    return false;
+                }
+            };
             JTable ratingsTable = new JTable(ratingsModel);
             ratingsTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
             TableRowSorter<DefaultTableModel> ratingsSorter = new TableRowSorter<>(ratingsModel);
@@ -197,7 +210,18 @@ public class GuiApplication {
             allMoviesPanel.add(allMoviesSearchPanel, BorderLayout.NORTH);
 
             // Create all movies table
-            DefaultTableModel allMoviesModel = new DefaultTableModel(new String[]{"ALL MOVIE TITLES"}, 0);
+            DefaultTableModel allMoviesModel = new DefaultTableModel(new String[]{"ALL MOVIE TITLES"}, 0) {
+            	/**
+				 * 
+				 */
+				private static final long serialVersionUID = 1L;
+
+				@Override
+                public boolean isCellEditable(int row, int column) {
+                    // All cells are uneditable
+                    return false;
+                }
+            };
             JTable allMoviesTable = new JTable(allMoviesModel);
             allMoviesTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
             TableRowSorter<DefaultTableModel> allMoviesSorter = new TableRowSorter<>(allMoviesModel);
@@ -218,7 +242,18 @@ public class GuiApplication {
             recommendationsPanel.add(recommendationsLabel, BorderLayout.NORTH);
 
             // Create recommendations table
-            DefaultTableModel recommendationsModel = new DefaultTableModel(new String[]{"Title", "Expected Title"}, 0);
+            DefaultTableModel recommendationsModel = new DefaultTableModel(new String[]{"Title", "Expected Title"}, 0) {
+            	/**
+				 * 
+				 */
+				private static final long serialVersionUID = 1L;
+
+				@Override
+                public boolean isCellEditable(int row, int column) {
+                    // All cells are uneditable
+                    return false;
+                }
+            };
             JTable recommendationsTable = new JTable(recommendationsModel);
             recommendationsTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
             JScrollPane recommendationsScrollPane = new JScrollPane(recommendationsTable);
