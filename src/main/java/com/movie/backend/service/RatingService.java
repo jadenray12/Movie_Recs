@@ -10,18 +10,20 @@ import java.util.Map.Entry;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.movie.backend.entity.Movie;
 import com.movie.backend.entity.Rating;
+import com.movie.backend.entity.RatingId;
 import com.movie.backend.repository.MovieRepository;
 import com.movie.backend.repository.RatingRepository;
 
 @Service
 public class RatingService {
 
-    private final RatingRepository ratingRepository;
+    private RatingRepository ratingRepository;
     
-    private final MovieRepository movieRepository;
+    private MovieRepository movieRepository;
     
    
     @Autowired
@@ -30,26 +32,14 @@ public class RatingService {
 		this.movieRepository = movieRepository;
     }
 
-    public Rating addRating(int user_id, int movieId, Double rating) {
-        
-
-        // Create a new Rating object
-        Rating newRating = new Rating(user_id, movieId, rating);
-        
-
-        // Save the rating
-        return ratingRepository.save(newRating);
+    @Transactional
+    public Rating addRating(Integer user_id, Integer movieId, Double rating) {  
+    	RatingId ratingId = new RatingId(user_id, movieId);
+        Rating newrating = new Rating(ratingId, rating);
+        return ratingRepository.save(newrating);
     }
     
     
-    public Rating addRating(Rating rating) {
-        
-
-      
-
-        // Save the rating
-        return ratingRepository.save(rating);
-    }
     
     public Rating updateRating(int userId, int movieId, double rating) {
     	Rating existingRating = ratingRepository.findByUserIdAndMovieId(userId, movieId);

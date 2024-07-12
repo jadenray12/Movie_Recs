@@ -14,6 +14,8 @@ import org.springframework.context.annotation.ComponentScan;
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableRowSorter;
 import java.awt.*;
@@ -181,6 +183,22 @@ public class GuiApplication {
                     return false;
                 }
             };
+            
+            ratingsModel.addTableModelListener(new TableModelListener() {
+            	@Override
+            	public void tableChanged(TableModelEvent e) {
+            		if (e.getType() == TableModelEvent.UPDATE) {
+            			int row = e.getFirstRow();
+            			int column = e.getColumn();
+            			Object changedValue = ratingsModel.getValueAt(row, column);
+            			Double changedVal = ((Number)changedValue).doubleValue();
+            			Object movieTitle = ratingsModel.getValueAt(row, column);
+            			int movieId = movieService.getMovieIdByMovie(movieTitle.toString());
+            			ratingService.updateRating(user.getUser_id(), movieId, changedVal);
+            		}
+            		
+            	}
+            });
             JTable ratingsTable = new JTable(ratingsModel);
             ratingsTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
             TableRowSorter<DefaultTableModel> ratingsSorter = new TableRowSorter<>(ratingsModel);
@@ -242,7 +260,7 @@ public class GuiApplication {
             recommendationsPanel.add(recommendationsLabel, BorderLayout.NORTH);
 
             // Create recommendations table
-            DefaultTableModel recommendationsModel = new DefaultTableModel(new String[]{"Title", "Expected Title"}, 0) {
+            DefaultTableModel recommendationsModel = new DefaultTableModel(new String[]{"Title", "Expected Rating"}, 0) {
             	/**
 				 * 
 				 */
@@ -333,29 +351,74 @@ public class GuiApplication {
 
             // Add buttons
             JPanel buttonPanel = new JPanel();
-            JButton editButton = new JButton("Edit");
+            JButton addButton = new JButton("Add New Rating");
             JButton deleteButton = new JButton("Delete");
             JButton getRecommendationsButton = new JButton("Refresh Recommendations");
 
-            buttonPanel.add(editButton);
+            buttonPanel.add(addButton);
             buttonPanel.add(deleteButton);
             buttonPanel.add(getRecommendationsButton);
             panel.add(buttonPanel, BorderLayout.SOUTH);
 
             // Button actions
-            editButton.addActionListener(new ActionListener() {
+            addButton.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
-                    int selectedRow = ratingsTable.getSelectedRow();
+                    int selectedRow = allMoviesTable.getSelectedRow();
                     if (selectedRow != -1) {
-                        int modelRow = ratingsTable.convertRowIndexToModel(selectedRow);
-                        String title = (String) ratingsModel.getValueAt(modelRow, 0);
-                        String newRating = JOptionPane.showInputDialog("Enter new rating for " + title + ":");
-                        if (newRating != null) {
-                            ratingService.updateRating(user.getUser_id(), movieService.getMovieIdByMovie(title), Double.parseDouble(newRating));
-                            ratingsModel.setValueAt(Double.parseDouble(newRating), modelRow, 1);
-                        }
+                    	boolean valid = false;
+                    	double rating = 0;
+                    	String stringRating = null;
+                    	
+                    	while (!valid) {
+                    		stringRating = JOptionPane.showInputDialog(null, "Enter a Rating for the Movie (0-5).",JOptionPane.QUESTION_MESSAGE);
+                        	
+                    		if (stringRating != null && !stringRating.isEmpty()) {
+                    			
+                    			try {
+                    				if (Double.parseDouble(stringRating) < 0  || Double.parseDouble(stringRating) > 5) {
+                    					throw new NumberFormatException();
+                    				}
+                    				rating = Double.parseDouble(stringRating);
+                    				valid = true;
+                    			} catch (NumberFormatException f) {                    				
+                    				// Display an error message if the input is not a valid double
+                                    JOptionPane.showMessageDialog(null, "Invalid input. Please enter a valid number value between 0 and 5.", "Error", JOptionPane.ERROR_MESSAGE);
+                    				
+                    			}
+                    			
+                    		} else if(stringRating != null) {
+                    			 JOptionPane.showMessageDialog(null, "Invalid input. Please enter a valid double value between between 0 and 5.", "Error", JOptionPane.ERROR_MESSAGE);
+                    		} else {
+                    			break;
+                    		}
+                    		
+                    	}
+                    	
+                    	if (stringRating != null) {
+                    		int column = allMoviesTable.getSelectedColumn();
+	                    	int row = allMoviesTable.getSelectedRow();
+	                    	Object movieObj = allMoviesTable.getValueAt(row, column);
+	                    	
+	                    	String movieTitle = movieObj.toString();
+	                    	
+	                    	ratingService.addRating(user.getUser_id(), movieService.getMovieIdByMovie(movieTitle), rating);
+	                    	
+	                    	// Fetch ratings and populate the ratings table
+	                        Map<String, Double> ratings = ratingService.getRatingsByUserId(user.getUser_id());
+
+	                        if (ratings != null) {
+	                        	ratingsModel.addRow(new Object[]{movieTitle, rating});
+	                            
+
+	                        } else {
+	                            ratingsModel.addRow(new Object[]{"No Ratings", "Search Table in the Bottom Left to Find and Add Movies you have Seen"});
+	                        }
+	                    	
+                    		
+                    	}	                    	
+                    	
                     } else {
-                        JOptionPane.showMessageDialog(null, "Please select a rating to edit.");
+                        JOptionPane.showMessageDialog(null, "Please select a Movie to Rate.");
                     }
                 }
             });

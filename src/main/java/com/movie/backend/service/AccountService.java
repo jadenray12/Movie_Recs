@@ -10,7 +10,7 @@ import java.util.Optional;
 @Service
 public class AccountService {
 
-    private final AccountRepository accountRepository;
+    private AccountRepository accountRepository;
     
     private String username;
     
