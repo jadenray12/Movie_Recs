@@ -353,11 +353,10 @@ public class GuiApplication {
             JPanel buttonPanel = new JPanel();
             JButton addButton = new JButton("Add New Rating");
             JButton deleteButton = new JButton("Delete");
-            JButton getRecommendationsButton = new JButton("Refresh Recommendations");
+            
 
             buttonPanel.add(addButton);
             buttonPanel.add(deleteButton);
-            buttonPanel.add(getRecommendationsButton);
             panel.add(buttonPanel, BorderLayout.SOUTH);
 
             // Button actions
@@ -408,6 +407,13 @@ public class GuiApplication {
 
 	                        if (ratings != null) {
 	                        	ratingsModel.addRow(new Object[]{movieTitle, rating});
+	                        	
+	                        	// REFRESH THE RECS
+	                        	recommendationsModel.setRowCount(0);  // Clear the existing recommendations
+	                            Map<String, Double> recommendations = ratingService.recommendMoviesFromNeighborhood(user.getUser_id());
+	                            for (Map.Entry<String, Double> recommendation : recommendations.entrySet()) {
+	                                recommendationsModel.addRow(new Object[]{recommendation.getKey(), recommendation.getValue()});
+	                            }
 	                            
 
 	                        } else {
@@ -434,21 +440,20 @@ public class GuiApplication {
                             ratingService.deleteRating(user.getUser_id(), movieService.getMovieIdByMovie(title));
                             ratingsModel.removeRow(modelRow);
                         }
+                        
+                        //REFRESH THE RECS
+                        recommendationsModel.setRowCount(0);  // Clear the existing recommendations
+                        Map<String, Double> recommendations = ratingService.recommendMoviesFromNeighborhood(user.getUser_id());
+                        for (Map.Entry<String, Double> recommendation : recommendations.entrySet()) {
+                            recommendationsModel.addRow(new Object[]{recommendation.getKey(), recommendation.getValue()});
+                        }
                     } else {
                         JOptionPane.showMessageDialog(null, "Please select a rating to delete.");
                     }
                 }
             });
 
-            getRecommendationsButton.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    recommendationsModel.setRowCount(0);  // Clear the existing recommendations
-                    Map<String, Double> recommendations = ratingService.recommendMoviesFromNeighborhood(user.getUser_id());
-                    for (Map.Entry<String, Double> recommendation : recommendations.entrySet()) {
-                        recommendationsModel.addRow(new Object[]{recommendation.getKey(), recommendation.getValue()});
-                    }
-                }
-            });
+            
 
             frame.setLocationRelativeTo(null);
             frame.setVisible(true);
