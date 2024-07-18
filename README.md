@@ -1,6 +1,6 @@
 # Movie Recommendation System
 
-A brief description of your project, highlighting its main purpose and functionality.
+A Java Spring Boot project to maintain and control an SQL database for various movies and users, allowing recommendations to be made based on similar user interests.
 
 ## Table of Contents
 
@@ -16,13 +16,14 @@ A brief description of your project, highlighting its main purpose and functiona
 
 ### Project Description
 
-A more detailed explanation of your project. Describe what problem it solves, its key features, and why it is useful.
+Movie_Recs is a Java Spring Boot application designed to manage an SQL database of movies and users. The primary functionality of the project is to provide personalized movie recommendations to users based on the preferences and interests of similar users. By leveraging the data stored in the SQL database, the system can deliver tailored suggestions, enhancing the movie-watching experience for each user.
 
 ### Technologies Used
 
 - **Java 11+**
 - **Spring Boot 2.5+**
 - **Maven**
+- **SQL Database (e.g., MySQL, PostgreSQL)**
 - **Any other relevant technologies or frameworks**
 
 ## Installation
