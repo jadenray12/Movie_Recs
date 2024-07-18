@@ -70,12 +70,40 @@ export DB_PASS=password
 
 ### Accessing the Application
 
-Explain how to access and use the application after it is running.
+After cloning the repository, navigate to the main Java file:
 
 ```bash
-# Access the application at
+git clone https://github.com/yourusername/yourproject.git
+cd yourproject/src/main/java/com/movie/frontend
+```
+
+### Running `GuiApplication.java`
+
+1. **Navigate to the Application Directory**
+
+   ```bash
+   cd src/main/java/com/movie/frontend
+   ```
+
+2. **Run `GuiApplication.java`**
+
+   ```bash
+   # Compile and run the application
+   javac GuiApplication.java
+   java GuiApplication
+   ```
+
+### Accessing the Login/Register Page
+
+Once the application is running, it should automatically open a login/register page in your web browser. If it doesn't open automatically, you can access it at:
+
+```plaintext
 http://localhost:8080
 ```
+
+---
+
+Ensure to adjust the commands and paths according to your specific project structure and requirements. This update should guide users on how to run `GuiApplication.java` and access the login/register page of your Java Spring Boot application after cloning the repository.
 
 ### API Endpoints
 
