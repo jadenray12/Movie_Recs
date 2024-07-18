@@ -1,4 +1,4 @@
-# Project Title
+# Movie Recommendations
 
 A brief description of your project, highlighting its main purpose and functionality.
 
