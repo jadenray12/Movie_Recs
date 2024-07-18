@@ -28,11 +28,20 @@ public class AccountService {
         return accountOptional.get();
     }
     
-    public void createAccount(String username, String password) {
+    public boolean createAccount(String username, String password) {
     	Integer newId = accountRepository.getMaxId() + 1 ;
+    	
+    	
+    	Optional<Account> accountOptional = accountRepository.findByUsernameAndPassword(username, password);
+    	
+    	if(accountOptional.isPresent()) {
+    		return false;
+    	}
     	
     	Account newAccount = new Account(newId, username, password);
     	
     	accountRepository.save(newAccount);
+    	
+    	return true;
     }
 }

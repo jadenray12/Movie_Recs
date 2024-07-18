@@ -128,10 +128,17 @@ public class GuiApplication {
                 public void actionPerformed(ActionEvent e) {
                 	String username = userText.getText();
                     String password = new String(passwordText.getPassword());
-                    accountService.createAccount(username, password);
-                    JOptionPane.showMessageDialog(null, "Account Created");
-                    frame.dispose();
-                    LoginPage.createAndShowGUI();
+                    boolean canMake = accountService.createAccount(username, password);
+                    
+                    if (canMake) {
+                    	JOptionPane.showMessageDialog(null, "Account Created");
+                        frame.dispose();    
+                        LoginPage.createAndShowGUI();
+                    } else {
+                    	JOptionPane.showMessageDialog(null, "Account Already Exists");                    	
+                    }
+                    
+                    
                     
                 }
             });
